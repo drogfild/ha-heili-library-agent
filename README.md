@@ -35,6 +35,27 @@ Create the required Home Assistant helpers:
 One input_datetime per account to store the due date.
 One input_boolean per account to trigger loan renewal.
 
+## AppDaemon Add-on configuration (Home Assistant)
+
+When running AppDaemon as a Home Assistant Add-on, additional packages must be configured explicitly.
+
+Open the AppDaemon add-on configuration page and add the following:
+
+System packages:
+- chromium-chromedriver
+
+Python packages:
+- selenium
+
+These settings ensure that:
+- A compatible ChromeDriver binary is available in the container
+- Selenium is installed and usable by the agent
+
+After changing these settings, restart the AppDaemon add-on.
+
+Without these packages, the agent will fail to start the headless browser.
+
+
 ## Example Home Assistant helpers
 
 Example input_datetime:
