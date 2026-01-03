@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+.env
+
+# AppDaemon
+appdaemon.log
+appdaemon.pid
+
+# Selenium / Chrome
+.chromedriver/
+chromedriver.log
+chrome_debug.log
+selenium.log
+
+# Headless display
+.Xauthority
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
