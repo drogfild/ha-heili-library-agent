@@ -122,7 +122,8 @@ class HeiliLibraryAgent(hass.Hass):
     def renew_all_books(self, kwargs):
         account = kwargs['account']
         self.log(f"Starting 'Renew All' for {account.name}...")
-        with self.setup_driver() as driver:
+        driver = self.setup_driver()
+        try:
             if not self.login_to_website(driver, account):
                 return
 
@@ -135,7 +136,7 @@ class HeiliLibraryAgent(hass.Hass):
 
 
 #                WebDriverWait(driver, 10).until(lambda d: d.find_element(By.NAME, "renewAll"))
-                
+
                 select_all_box = self.find_element_safe(driver, By.NAME, "loansCheckboxGroup:selectAll")
                 renew_all_button = self.find_element_safe(driver, By.NAME, "renewLoansSubmit")
                 if select_all_box and renew_all_button:
@@ -181,6 +182,8 @@ class HeiliLibraryAgent(hass.Hass):
                         self.log(f"renew_all_button ok")
             except TimeoutException:
                 self.log(f"Timeout while renewing books for {account.name}.")
+        finally:
+            driver.quit()
         
         self.turn_off(account.input_boolean)
         self.log(f"Renewal process for {account.name} completed.")
@@ -210,10 +213,11 @@ class HeiliLibraryAgent(hass.Hass):
     def fetch_due_date(self, kwargs):
         account = kwargs['account']
         self.log(f"Fetching due date for {account.name}...")
-        with self.setup_driver() as driver:
+        driver = self.setup_driver()
+        try:
             if not self.login_to_website(driver, account):
                 return
-            
+
             self.log(f"Login success")
 
             try:
@@ -222,16 +226,15 @@ class HeiliLibraryAgent(hass.Hass):
                 #due_date_element = self.find_element_safe(driver, By.CSS_SELECTOR, "td.checkedout-status-information > div.status-column > strong")
                 #due_date_element = self.find_element_safe(driver, By.CSS_SELECTOR, "span.arena-renewal-date-value > span")
 
-                
 
                 # make Lainani section visible
                 driver.execute_script("document.querySelector('#portlet_loansWicket_WAR_arenaportlet > div > div').style.display = 'block';")
-            
+
 
                 #due_date_element = driver.find_element(By.CSS_SELECTOR, 'td.arena-renewal-date > span.arena-renewal-date-value[aria-label^="Eräpäivä:"]')
                 due_date_element = self.find_element_safe(driver, By.CSS_SELECTOR, 'td.arena-renewal-date > span.arena-renewal-date-value[aria-label^="Eräpäivä:"]')
                 #self.find_element_safe(driver, By.NAME, "processLogin")
-                
+
                 if due_date_element:
                     due_date_text = due_date_element.text
                     self.log(f"Due date element found: {due_date_text}")
@@ -240,23 +243,23 @@ class HeiliLibraryAgent(hass.Hass):
                         due_date = due_date_parts[1]
                         due_date_ymd = self.parse_date(due_date).strftime("%Y-%m-%d")
                         self.log(f"Due date fetched for {account.name}: {due_date}")
-                        self.call_service("input_datetime/set_datetime", 
+                        self.call_service("input_datetime/set_datetime",
                             entity_id=account.input_datetime,
-                            date=due_date_ymd) 
+                            date=due_date_ymd)
                     elif len(due_date_parts) == 1:
                         due_date = due_date_parts[0]
                         #self.log(f"Due {due_date}")
                         due_date_ymd = self.parse_date(due_date).strftime("%Y-%m-%d")
                         self.log(f"Due date fetched for {account.name}: {due_date}")
-                        self.call_service("input_datetime/set_datetime", 
+                        self.call_service("input_datetime/set_datetime",
                             entity_id=account.input_datetime,
                             date=due_date_ymd)
-                        
+
                     else:
                         self.log(f"Failed to parse due date for {account.name}. Unexpected format: {due_date_text}")
                 else:
                     self.log(f"Due date element not found for {account.name}. Setting to 1.1.2000")
-                    self.call_service("input_datetime/set_datetime", 
+                    self.call_service("input_datetime/set_datetime",
                             entity_id=account.input_datetime,
                             date='2000-01-01')
             except TimeoutException:
@@ -265,6 +268,8 @@ class HeiliLibraryAgent(hass.Hass):
                 self.log(f"NoSuchElementException while fetching due date for {account.name}.")
             self.log(f"Fetch end {account.name}")
             return True
+        finally:
+            driver.quit()
 
     @staticmethod
     def parse_date(date_string: str) -> datetime:
