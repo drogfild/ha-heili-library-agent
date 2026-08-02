@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Heili library card",
+        "data": {
+          "username": "Library card number (HEILI...)",
+          "pin": "PIN code"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Finna rejected the card number or PIN",
+      "cannot_connect": "Could not connect to heili.finna.fi"
+    },
+    "abort": {
+      "already_configured": "This library card is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "loans": { "name": "Loans" },
+      "next_due_date": { "name": "Next due date" },
+      "fines": { "name": "Fines" },
+      "holds": { "name": "Holds" },
+      "holds_ready": { "name": "Holds ready for pickup" }
+    },
+    "button": {
+      "renew_all": { "name": "Renew all loans" }
+    },
+    "calendar": {
+      "due_dates": { "name": "Due dates" }
+    }
+  }
+}

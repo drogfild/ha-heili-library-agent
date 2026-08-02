@@ -1,0 +1,12 @@
+{
+  "domain": "heili_library",
+  "name": "Heili Library",
+  "codeowners": ["@drogfild"],
+  "config_flow": true,
+  "documentation": "https://github.com/talonpoika/ha-heili-library-agent",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/talonpoika/ha-heili-library-agent/issues",
+  "requirements": ["beautifulsoup4>=4.12.0"],
+  "version": "1.0.0"
+}

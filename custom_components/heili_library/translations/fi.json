@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Heili-kirjastokortti",
+        "data": {
+          "username": "Kirjastokortin tunnus (HEILI...)",
+          "pin": "PIN-koodi"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Finna hylkäsi kortin tunnuksen tai PIN-koodin",
+      "cannot_connect": "Yhteys heili.finna.fi-palveluun epäonnistui"
+    },
+    "abort": {
+      "already_configured": "Tämä kirjastokortti on jo lisätty"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "loans": { "name": "Lainat" },
+      "next_due_date": { "name": "Seuraava eräpäivä" },
+      "fines": { "name": "Maksut" },
+      "holds": { "name": "Varaukset" },
+      "holds_ready": { "name": "Noudettavat varaukset" }
+    },
+    "button": {
+      "renew_all": { "name": "Uusi kaikki lainat" }
+    },
+    "calendar": {
+      "due_dates": { "name": "Eräpäivät" }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+"""Renew-all button."""
+
+from __future__ import annotations
+
+import logging
+
+from homeassistant.components.button import ButtonEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from . import HeiliConfigEntry, HeiliCoordinator
+from .entity import HeiliEntity
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: HeiliConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    async_add_entities([RenewAllButton(entry.runtime_data)])
+
+
+class RenewAllButton(HeiliEntity, ButtonEntity):
+    _attr_translation_key = "renew_all"
+    _attr_icon = "mdi:book-refresh"
+
+    def __init__(self, coordinator: HeiliCoordinator) -> None:
+        super().__init__(coordinator, "renew_all")
+
+    async def async_press(self) -> None:
+        ok, fail = await self.coordinator.client.async_renew_all()
+        _LOGGER.info("Renew all for %s: %d ok, %d failed", self.coordinator.username, ok, fail)
+        await self.coordinator.async_request_refresh()

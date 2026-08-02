@@ -1,0 +1,53 @@
+<!-- Hand-built fixture matching heili.finna.fi /MyResearch/CheckedOut markup
+     (finna2 theme, observed 2026-08-02), with a renewals form added per the
+     upstream template myresearch/checkedout.phtml. No real account data. -->
+<html><body>
+<form name="renewals" method="post" id="renewals" data-clear-account-cache="checkedOut">
+<input type="hidden" name="csrf" value="testcsrf-123">
+<input type="hidden" name="renewAllIDS[]" value="renewid-1">
+<input type="hidden" name="selectAllIDS[]" value="renewid-1">
+<table>
+<tr aria-hidden="true" class="visually-hidden myresearch-row">
+  <th id="label-select-column">Valitse</th>
+  <th class="hidden-xs"></th>
+  <th id="label-title-column">Lainan tiedot</th>
+</tr>
+<tr class="myresearch-row" id="recordheili.aaaa-1111">
+  <td class="text-left checkbox-col">
+    <input type="checkbox" class="checkbox-select-item" name="renewSelectedIDS[]" value="renewid-1">
+  </td>
+  <td aria-hidden="true" class="text-center hidden-xs"></td>
+  <td class="checkedout-status-information">
+    <div class="title-column text-left">
+      <h3 class="record-title"><a href="/Record/heili.aaaa-1111">Kiikissä</a></h3>
+      <div class="record-core-metadata">
+        <span class="label label-info">Kirja</span><br>
+        <a href="/Search/Results?type=Author"><span class="authority-label">Amores, Eva</span></a><br>
+      </div>
+    </div>
+    <div class="status-column">
+      Lainattu: 2.8.2026<br>
+      <strong>Lainauspaikka:</strong>
+      Pontuksen kirjasto<br>
+      <strong>Uusintakertoja jäljellä: 5</strong><br>
+      <strong>Eräpäivä: 31.8.2026</strong>
+    </div>
+  </td>
+</tr>
+<tr class="myresearch-row" id="recordheili.bbbb-2222">
+  <td class="text-left checkbox-col"></td>
+  <td aria-hidden="true" class="text-center hidden-xs"></td>
+  <td class="checkedout-status-information">
+    <div class="title-column text-left">
+      <h3 class="record-title">Ei-uusittava kirja</h3>
+      <div class="record-core-metadata"></div>
+    </div>
+    <div class="status-column">
+      <div class="alert alert-danger">Myöhässä</div>
+      <strong>Eräpäivä: 15.7.2026</strong>
+    </div>
+  </td>
+</tr>
+</table>
+</form>
+</body></html>

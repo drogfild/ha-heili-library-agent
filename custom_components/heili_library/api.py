@@ -1,0 +1,231 @@
+"""HTTP client and HTML parsing for heili.finna.fi (VuFind/Finna).
+
+Finna has no user-data API, so this logs in like a browser (form POST with a
+one-time CSRF token) and parses the account pages. All parsing functions are
+pure so they can be unit-tested against saved HTML fixtures.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from datetime import date
+
+import aiohttp
+from bs4 import BeautifulSoup
+
+from .const import BASE_URL, USER_AGENT
+
+FINNISH_DATE_RE = re.compile(r"(\d{1,2})\.(\d{1,2})\.(\d{4})")
+
+
+class FinnaError(Exception):
+    """Base error."""
+
+
+class FinnaAuthError(FinnaError):
+    """Login rejected."""
+
+
+@dataclass
+class Loan:
+    title: str | None
+    author: str | None
+    due_date: date | None
+    renewable: bool
+    details: dict
+
+
+@dataclass
+class Hold:
+    title: str
+    available: bool
+    in_transit: bool
+    pickup_location: str | None
+    queue_position: str | None
+    expires: date | None
+
+
+@dataclass
+class FinnaData:
+    loans: list[Loan] = field(default_factory=list)
+    holds: list[Hold] = field(default_factory=list)
+    fines_total: float | None = None
+    renew_all_ids: list[str] = field(default_factory=list)
+    renew_csrf: str | None = None
+
+    @property
+    def next_due_date(self) -> date | None:
+        dates = [loan.due_date for loan in self.loans if loan.due_date]
+        return min(dates) if dates else None
+
+
+def parse_finnish_date(text: str | None) -> date | None:
+    m = FINNISH_DATE_RE.search(text or "")
+    if not m:
+        return None
+    d, mo, y = m.groups()
+    return date(int(y), int(mo), int(d))
+
+
+def _text_pairs(container) -> dict:
+    """Extract '<strong>Label:</strong> value' pairs plus bare strong texts."""
+    pairs: dict = {}
+    for strong in container.find_all("strong"):
+        text = strong.get_text(" ", strip=True)
+        if ":" in text:
+            label, _, value = text.partition(":")
+            value = value.strip()
+            if not value:
+                nxt = strong.next_sibling
+                value = re.sub(r"\s+", " ", str(nxt)).strip(" |") if nxt else ""
+            pairs[label.strip()] = value
+        else:
+            pairs.setdefault("_flags", []).append(text)
+    return pairs
+
+
+def parse_login_form(html: str) -> dict:
+    form = BeautifulSoup(html, "html.parser").find("form", attrs={"name": "loginForm"})
+    if form is None:
+        raise FinnaError("login form not found")
+    return {
+        inp["name"]: inp.get("value", "")
+        for inp in form.find_all("input", attrs={"type": "hidden"})
+    }
+
+
+def is_logged_out(html: str) -> bool:
+    return 'name="loginForm"' in html or 'id="loginForm"' in html
+
+
+def parse_checked_out(html: str) -> tuple[list[Loan], list[str], str | None]:
+    """Return (loans, renew_all_ids, csrf)."""
+    doc = BeautifulSoup(html, "html.parser")
+    loans = []
+    for row in doc.select("tr.myresearch-row[id^=record]"):
+        title_el = row.select_one("h3.record-title")
+        author_el = row.select_one(".record-core-metadata .authority-label")
+        status = row.select_one(".status-column")
+        details = _text_pairs(status) if status else {}
+        loans.append(
+            Loan(
+                title=title_el.get_text(" ", strip=True) if title_el else None,
+                author=author_el.get_text(" ", strip=True) if author_el else None,
+                due_date=parse_finnish_date(details.get("Eräpäivä")),
+                renewable=bool(row.select_one("input.checkbox-select-item")),
+                details=details,
+            )
+        )
+    form = doc.find("form", attrs={"name": "renewals"})
+    renew_ids = [
+        inp.get("value")
+        for inp in (form.find_all("input", attrs={"name": "renewAllIDS[]"}) if form else [])
+    ]
+    csrf_el = form.find("input", attrs={"name": "csrf"}) if form else None
+    return loans, renew_ids, csrf_el.get("value") if csrf_el else None
+
+
+def parse_holds(html: str) -> list[Hold]:
+    doc = BeautifulSoup(html, "html.parser")
+    holds = []
+    for row in doc.select("tr.myresearch-row"):
+        title_el = row.select_one("h3.record-title")
+        if title_el is None:
+            continue
+        info = row.select_one(".holds-status-information") or row
+        details = _text_pairs(info)
+        holds.append(
+            Hold(
+                title=title_el.get_text(" ", strip=True),
+                available=info.select_one(".alert-success") is not None,
+                in_transit=info.select_one(".text-success") is not None,
+                pickup_location=details.get("Noutopaikka"),
+                queue_position=details.get("Sijainti jonossa"),
+                expires=parse_finnish_date(details.get("Vanhenee")),
+            )
+        )
+    return holds
+
+
+def parse_fines_total(html: str) -> float | None:
+    doc = BeautifulSoup(html, "html.parser")
+    total_el = doc.select_one(".js-payment-total-due[data-raw]")
+    if total_el is not None:
+        return int(total_el["data-raw"]) / 100
+    # No online-payment block on the page: no fines (or not payable online).
+    return 0.0 if not doc.select("table.fines-table tbody tr") else None
+
+
+class FinnaClient:
+    """Session-holding client for one library card."""
+
+    def __init__(self, session: aiohttp.ClientSession, username: str, pin: str) -> None:
+        self._session = session
+        self._username = username
+        self._pin = pin
+        self._headers = {"User-Agent": USER_AGENT}
+
+    async def _get(self, path: str) -> str:
+        async with self._session.get(BASE_URL + path, headers=self._headers) as resp:
+            resp.raise_for_status()
+            return await resp.text()
+
+    async def _post(self, path: str, data) -> str:
+        async with self._session.post(
+            BASE_URL + path, data=data, headers=self._headers
+        ) as resp:
+            resp.raise_for_status()
+            return await resp.text()
+
+    async def async_login(self) -> None:
+        fields = parse_login_form(await self._get("/MyResearch/UserLogin"))
+        fields.update(
+            {
+                "username": self._username,
+                "password": self._pin,
+                "processLogin": "Kirjaudu",
+            }
+        )
+        body = await self._post("/MyResearch/Home", fields)
+        if is_logged_out(body):
+            raise FinnaAuthError("Finna rejected the library card number or PIN")
+
+    async def _get_page(self, path: str) -> str:
+        """Get a page, re-logging in once if the session has expired."""
+        body = await self._get(path)
+        if is_logged_out(body):
+            await self.async_login()
+            body = await self._get(path)
+            if is_logged_out(body):
+                raise FinnaAuthError("still logged out after re-login")
+        return body
+
+    async def async_get_data(self) -> FinnaData:
+        loans, renew_ids, csrf = parse_checked_out(
+            await self._get_page("/MyResearch/CheckedOut")
+        )
+        holds = parse_holds(await self._get_page("/Holds/List"))
+        fines_total = parse_fines_total(await self._get_page("/MyResearch/Fines"))
+        return FinnaData(
+            loans=loans,
+            holds=holds,
+            fines_total=fines_total,
+            renew_all_ids=renew_ids,
+            renew_csrf=csrf,
+        )
+
+    async def async_renew_all(self) -> tuple[int, int]:
+        """Renew all renewable loans; returns (succeeded, failed)."""
+        _, renew_ids, csrf = parse_checked_out(
+            await self._get_page("/MyResearch/CheckedOut")
+        )
+        if not renew_ids or not csrf:
+            return (0, 0)
+        data = [("renewAll", "1"), ("csrf", csrf)]
+        data += [("renewAllIDS[]", i) for i in renew_ids]
+        body = await self._post("/MyResearch/CheckedOut", data)
+        doc = BeautifulSoup(body, "html.parser")
+        ok = len(doc.select(".status-column .alert-success"))
+        fail = len(doc.select(".status-column .alert-danger"))
+        return (ok, fail)
