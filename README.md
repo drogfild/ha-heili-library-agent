@@ -1,3 +1,5 @@
+<img src="assets/icon.png" alt="Finna Library icon" width="96" align="right"/>
+
 # Finna Library — Home Assistant integration
 
 [![Validate](https://github.com/talonpoika/ha-finna-library/actions/workflows/validate.yml/badge.svg)](https://github.com/talonpoika/ha-finna-library/actions/workflows/validate.yml)

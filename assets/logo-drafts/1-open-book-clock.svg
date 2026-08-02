@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00558b"/>
+      <stop offset="1" stop-color="#00294d"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <!-- avoin kirja -->
+  <path d="M128 88 C108 74 78 70 52 74 V174 C78 170 108 174 128 188 C148 174 178 170 204 174 V74 C178 70 148 74 128 88 Z"
+        fill="none" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+  <line x1="128" y1="88" x2="128" y2="188" stroke="#ffffff" stroke-width="8"/>
+  <!-- kello (eräpäivä) -->
+  <circle cx="186" cy="78" r="34" fill="#ffb300" stroke="#00294d" stroke-width="8"/>
+  <line x1="186" y1="78" x2="186" y2="58" stroke="#00294d" stroke-width="7" stroke-linecap="round"/>
+  <line x1="186" y1="78" x2="200" y2="86" stroke="#00294d" stroke-width="7" stroke-linecap="round"/>
+</svg>

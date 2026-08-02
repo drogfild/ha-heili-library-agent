@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="56" fill="#f5f2ec"/>
+  <!-- Home Assistant -henkinen katto -->
+  <path d="M128 34 L216 106 H196 V118 H60 V106 H40 Z" fill="#009ac7"/>
+  <!-- kirjapino -->
+  <rect x="60" y="130" width="136" height="26" rx="6" fill="#00558b"/>
+  <rect x="74" y="162" width="122" height="26" rx="6" fill="#ffb300"/>
+  <rect x="60" y="194" width="130" height="26" rx="6" fill="#d3552f"/>
+  <!-- sivuviivat -->
+  <line x1="176" y1="136" x2="176" y2="150" stroke="#f5f2ec" stroke-width="6"/>
+  <line x1="96" y1="168" x2="96" y2="182" stroke="#f5f2ec" stroke-width="6"/>
+  <line x1="168" y1="200" x2="168" y2="214" stroke="#f5f2ec" stroke-width="6"/>
+</svg>
