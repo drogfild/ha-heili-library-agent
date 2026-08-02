@@ -26,3 +26,4 @@ selenium.log
 Thumbs.db
 .idea/
 .vscode/
+.venv/
