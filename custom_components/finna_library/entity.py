@@ -14,9 +14,10 @@ class FinnaEntity(CoordinatorEntity[FinnaCoordinator]):
 
     def __init__(self, coordinator: FinnaCoordinator, key: str) -> None:
         super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.username}_{key}"
+        account = f"{coordinator.host}:{coordinator.username.lower()}"
+        self._attr_unique_id = f"{account}_{key}"
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.username)},
+            identifiers={(DOMAIN, account)},
             name=f"{coordinator.host.split('.')[0].capitalize()} {coordinator.username}",
             manufacturer="Finna",
             model="Finna account",

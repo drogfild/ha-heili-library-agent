@@ -57,6 +57,11 @@ class FinnaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             username = user_input[CONF_USERNAME].strip()
             host = normalize_host(user_input[CONF_HOST])
+            if not host or "." not in host:
+                errors["base"] = "invalid_host"
+                return self.async_show_form(
+                    step_id="user", data_schema=DATA_SCHEMA, errors=errors
+                )
             await self.async_set_unique_id(f"{host}:{username.lower()}")
             self._abort_if_unique_id_configured()
             error = await self._async_validate(username, user_input[CONF_PIN], host)

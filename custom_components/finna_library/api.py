@@ -88,7 +88,10 @@ def parse_finnish_date(text: str | None) -> date | None:
     if not m:
         return None
     d, mo, y = m.groups()
-    return date(int(y), int(mo), int(d))
+    try:
+        return date(int(y), int(mo), int(d))
+    except ValueError:
+        return None
 
 
 def _text_pairs(container) -> dict:
@@ -100,8 +103,20 @@ def _text_pairs(container) -> dict:
             label, _, value = text.partition(":")
             value = value.strip()
             if not value:
-                nxt = strong.next_sibling
-                value = re.sub(r"\s+", " ", str(nxt)).strip(" |") if nxt else ""
+                # Walk siblings past whitespace-only text nodes; take the
+                # first with content (a text node or an element like <span>).
+                for nxt in strong.next_siblings:
+                    text = (
+                        nxt.get_text(" ", strip=True)
+                        if hasattr(nxt, "get_text")
+                        else str(nxt)
+                    )
+                    text = re.sub(r"\s+", " ", text).strip(" |")
+                    if text:
+                        value = text
+                        break
+                    if getattr(nxt, "name", None) == "br":
+                        break
             pairs[label.strip()] = value
         else:
             pairs.setdefault("_flags", []).append(text)
@@ -144,6 +159,7 @@ def parse_checked_out(html: str) -> tuple[list[Loan], list[str], str | None]:
     renew_ids = [
         inp.get("value")
         for inp in (form.find_all("input", attrs={"name": "renewAllIDS[]"}) if form else [])
+        if inp.get("value")
     ]
     csrf_el = form.find("input", attrs={"name": "csrf"}) if form else None
     return loans, renew_ids, csrf_el.get("value") if csrf_el else None
@@ -304,16 +320,23 @@ class FinnaClient:
         """
         count = 0
         total = None
+        prev_first: tuple | None = None
         for page in range(1, 51):
             entries, total = parse_history_page(
                 await self._get_page(f"/Checkouts/History?page={page}")
             )
             if not entries:
                 break
-            count += sum(
-                1 for e in entries if e.checkout_date and e.checkout_date.year == year
-            )
-            if any(e.checkout_date and e.checkout_date.year < year for e in entries):
+            first = (entries[0].title, entries[0].checkout_date)
+            dated = [e for e in entries if e.checkout_date]
+            # Stop on a repeated page (some servers clamp page=N past the
+            # end) or when no dates parse (layout/language changed) — both
+            # would otherwise loop to the cap and inflate the count.
+            if first == prev_first or not dated:
+                break
+            prev_first = first
+            count += sum(1 for e in dated if e.checkout_date.year == year)
+            if any(e.checkout_date.year < year for e in dated):
                 break
         return (count if total is not None else None), total
 
@@ -351,6 +374,8 @@ class FinnaClient:
         data = [("renewAll", "1"), ("csrf", csrf)]
         data += [("renewAllIDS[]", i) for i in renew_ids]
         body = await self._post("/MyResearch/CheckedOut", data)
+        if is_logged_out(body):
+            raise FinnaError("session expired during renewal; nothing was renewed")
         doc = BeautifulSoup(body, "html.parser")
         ok = len(doc.select(".status-column .alert-success"))
         fail = len(doc.select(".status-column .alert-danger"))

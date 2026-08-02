@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import FinnaConfigEntry, FinnaCoordinator
@@ -45,7 +46,7 @@ class DueDateCalendar(FinnaEntity, CalendarEntity):
 
     @property
     def event(self) -> CalendarEvent | None:
-        today = datetime.now().date()
+        today = dt_util.now().date()
         upcoming = [e for e in self._events() if e.end_datetime_local.date() > today]
         return upcoming[0] if upcoming else None
 

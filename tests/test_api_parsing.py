@@ -146,3 +146,24 @@ def test_parse_saved_searches_none():
     from custom_components.finna_library.api import parse_saved_searches
 
     assert parse_saved_searches("<html><body></body></html>") == []
+
+
+def test_parse_finnish_date_invalid_calendar_date():
+    assert parse_finnish_date("31.6.2026") is None
+    assert parse_finnish_date("99.9.2026") is None
+
+
+def test_text_pairs_value_in_span():
+    from custom_components.finna_library.api import parse_holds
+
+    html = """
+    <table><tr class="myresearch-row" id="recordx.1"><td>
+      <h3 class="record-title">Kirja</h3>
+      <div class="holds-status-information">
+        <strong>Noutopaikka:</strong>
+        <span>Keskuskirjasto</span><br>
+      </div>
+    </td></tr></table>
+    """
+    holds = parse_holds(html)
+    assert holds[0].pickup_location == "Keskuskirjasto"

@@ -36,5 +36,10 @@ class RenewAllButton(FinnaEntity, ButtonEntity):
             ok, fail = await self.coordinator.client.async_renew_all()
         except FinnaError as err:
             raise HomeAssistantError(f"Renewing loans failed: {err}") from err
-        _LOGGER.info("Renew all for %s: %d ok, %d failed", self.coordinator.username, ok, fail)
+        _LOGGER.info(
+            "Renew all for %s…: %d ok, %d failed",
+            self.coordinator.username[:5],
+            ok,
+            fail,
+        )
         await self.coordinator.async_request_refresh()

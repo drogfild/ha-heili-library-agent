@@ -19,7 +19,8 @@
     },
     "error": {
       "invalid_auth": "Finna hylkäsi kortin tunnuksen tai PIN-koodin",
-      "cannot_connect": "Yhteys heili.finna.fi-palveluun epäonnistui"
+      "cannot_connect": "Yhteys Finna-palveluun epäonnistui",
+      "invalid_host": "Virheellinen Finna-osoite"
     },
     "abort": {
       "already_configured": "Tämä kirjastokortti on jo lisätty",

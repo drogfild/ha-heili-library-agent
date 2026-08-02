@@ -32,7 +32,8 @@ class FinnaCoordinator(DataUpdateCoordinator[FinnaData]):
             update_interval=timedelta(hours=UPDATE_INTERVAL_HOURS),
         )
         # Own cookie jar per card so multiple accounts don't share a session.
-        session = async_create_clientsession(hass)
+        self.session = async_create_clientsession(hass)
+        session = self.session
         self.host: str = entry.data.get(CONF_HOST, DEFAULT_HOST)
         self.client = FinnaClient(
             session, entry.data[CONF_USERNAME], entry.data[CONF_PIN], self.host
@@ -44,9 +45,11 @@ class FinnaCoordinator(DataUpdateCoordinator[FinnaData]):
             data = await self.client.async_get_data()
             # Flag saved searches whose hit count grew since the last poll.
             if self.data is not None:
-                previous = {s.query: s.results for s in self.data.saved_searches}
+                previous = {
+                    (s.url or s.query): s.results for s in self.data.saved_searches
+                }
                 for search in data.saved_searches:
-                    prev = previous.get(search.query)
+                    prev = previous.get(search.url or search.query)
                     if prev is not None and search.results is not None:
                         search.new_results = max(0, search.results - prev)
             return data
@@ -67,4 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: FinnaConfigEntry) -> boo
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: FinnaConfigEntry) -> bool:
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded:
+        await entry.runtime_data.session.close()
+    return unloaded
