@@ -21,11 +21,9 @@ you to re-authenticate.
 > Karelia). Other Finna views run the same software and markup, so they are
 > expected to work — reports welcome via issues.
 
-> **Known limitation:** parsing relies on the Finnish UI labels ("Eräpäivä",
-> "Noutopaikka", …), which Finna serves by default. If your Finna session
-> defaults to English or Swedish, sensors will come up empty. Language-
-> independent parsing is tracked in
-> [#2](https://github.com/talonpoika/ha-finna-library/issues/2).
+> Parsing relies on the Finnish UI labels, so the integration pins its own
+> scrape session to Finnish (`lng=fi`). This does not affect the language of
+> your own Finna browser sessions.
 
 ## Entities (one device per library card)
 

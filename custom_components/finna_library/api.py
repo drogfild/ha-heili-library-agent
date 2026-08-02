@@ -290,7 +290,9 @@ class FinnaClient:
         return await self._request("POST", path, data)
 
     async def async_login(self) -> None:
-        fields = parse_login_form(await self._get("/MyResearch/UserLogin"))
+        # lng=fi pins the session language: parsing relies on Finnish labels,
+        # and the user's own browser sessions are unaffected (issue #2).
+        fields = parse_login_form(await self._get("/MyResearch/UserLogin?lng=fi"))
         fields.update(
             {
                 "username": self._username,
