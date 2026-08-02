@@ -65,30 +65,38 @@ def text_pairs(status_col) -> dict:
             value = value.strip()
             if not value:
                 nxt = strong.next_sibling
-                value = str(nxt).strip() if nxt else ""
+                value = re.sub(r"\s+", " ", str(nxt)).strip(" |") if nxt else ""
             pairs[label.strip()] = value
         else:
             pairs.setdefault("_flags", []).append(text)
     return pairs
 
 
+def parse_finnish_date(text: str | None) -> str | None:
+    m = DUE_DATE_RE.search(text or "")
+    if not m:
+        return None
+    d, mo, y = m.groups()
+    return f"{y}-{int(mo):02d}-{int(d):02d}"
+
+
 def parse_checked_out(html: str) -> dict:
     doc = soup_of(html)
     loans = []
-    for row in doc.select("tr.myresearch-row"):
+    for row in doc.select("tr.myresearch-row[id^=record]"):
         title_el = row.select_one("h3.record-title")
+        author_el = row.select_one(".record-core-metadata .authority-label")
         status = row.select_one(".status-column")
-        entry = {
-            "title": title_el.get_text(" ", strip=True) if title_el else None,
-            "status_text": status.get_text(" | ", strip=True) if status else "",
-            "details": text_pairs(status) if status else {},
-            "renewable": bool(row.select_one("input.checkbox-select-item")),
-        }
-        m = DUE_DATE_RE.search(entry["status_text"])
-        if m:
-            d, mo, y = m.groups()
-            entry["due_date"] = f"{y}-{int(mo):02d}-{int(d):02d}"
-        loans.append(entry)
+        details = text_pairs(status) if status else {}
+        loans.append(
+            {
+                "title": title_el.get_text(" ", strip=True) if title_el else None,
+                "author": author_el.get_text(" ", strip=True) if author_el else None,
+                "due_date": parse_finnish_date(details.get("Eräpäivä")),
+                "details": details,
+                "renewable": bool(row.select_one("input.checkbox-select-item")),
+            }
+        )
     form = doc.find("form", attrs={"name": "renewals"})
     renew_ids = [
         inp.get("value")
@@ -105,16 +113,21 @@ def parse_checked_out(html: str) -> dict:
 def parse_holds(html: str) -> list[dict]:
     doc = soup_of(html)
     holds = []
-    for row in doc.select("tr.myresearch-row"):
+    for row in doc.select("tr.myresearch-row[id^=record], tr.myresearch-row.result"):
         title_el = row.select_one("h3.record-title")
+        if title_el is None:
+            continue
         info = row.select_one(".holds-status-information") or row
+        details = text_pairs(info)
         holds.append(
             {
-                "title": title_el.get_text(" ", strip=True) if title_el else None,
+                "title": title_el.get_text(" ", strip=True),
                 "available": info.select_one(".alert-success") is not None,
                 "in_transit": info.select_one(".text-success") is not None,
-                "details": text_pairs(info),
-                "status_text": info.get_text(" | ", strip=True),
+                "pickup_location": details.get("Noutopaikka"),
+                "queue_position": details.get("Sijainti jonossa"),
+                "expires": parse_finnish_date(details.get("Vanhenee")),
+                "details": details,
             }
         )
     return holds
