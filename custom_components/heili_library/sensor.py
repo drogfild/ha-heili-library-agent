@@ -23,6 +23,8 @@ async def async_setup_entry(
             FinesSensor(coordinator),
             HoldsSensor(coordinator),
             HoldsReadySensor(coordinator),
+            LoansThisYearSensor(coordinator),
+            SavedSearchesSensor(coordinator),
         ]
     )
 
@@ -102,6 +104,51 @@ class HoldsSensor(HeiliEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         return {"holds": [_hold_attr(h) for h in self.coordinator.data.holds]}
+
+
+class LoansThisYearSensor(HeiliEntity, SensorEntity):
+    _attr_translation_key = "loans_this_year"
+    _attr_icon = "mdi:counter"
+
+    def __init__(self, coordinator: HeiliCoordinator) -> None:
+        super().__init__(coordinator, "loans_this_year")
+
+    @property
+    def native_value(self) -> int | None:
+        return self.coordinator.data.loans_this_year
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {"history_total": self.coordinator.data.history_total}
+
+
+class SavedSearchesSensor(HeiliEntity, SensorEntity):
+    _attr_translation_key = "saved_searches"
+    _attr_icon = "mdi:magnify-plus"
+
+    def __init__(self, coordinator: HeiliCoordinator) -> None:
+        super().__init__(coordinator, "saved_searches")
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.data.saved_searches)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {
+            "searches": [
+                {
+                    "query": s.query,
+                    "url": s.url,
+                    "results": s.results,
+                    "new_results": s.new_results,
+                }
+                for s in self.coordinator.data.saved_searches
+            ],
+            "new_results_total": sum(
+                s.new_results for s in self.coordinator.data.saved_searches
+            ),
+        }
 
 
 class HoldsReadySensor(HeiliEntity, SensorEntity):

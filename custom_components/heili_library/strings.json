@@ -19,17 +19,37 @@
   },
   "entity": {
     "sensor": {
-      "loans": { "name": "Loans" },
-      "next_due_date": { "name": "Next due date" },
-      "fines": { "name": "Fines" },
-      "holds": { "name": "Holds" },
-      "holds_ready": { "name": "Holds ready for pickup" }
+      "loans": {
+        "name": "Loans"
+      },
+      "next_due_date": {
+        "name": "Next due date"
+      },
+      "fines": {
+        "name": "Fines"
+      },
+      "holds": {
+        "name": "Holds"
+      },
+      "holds_ready": {
+        "name": "Holds ready for pickup"
+      },
+      "loans_this_year": {
+        "name": "Loans this year"
+      },
+      "saved_searches": {
+        "name": "Saved searches"
+      }
     },
     "button": {
-      "renew_all": { "name": "Renew all loans" }
+      "renew_all": {
+        "name": "Renew all loans"
+      }
     },
     "calendar": {
-      "due_dates": { "name": "Due dates" }
+      "due_dates": {
+        "name": "Due dates"
+      }
     }
   }
 }

@@ -19,17 +19,37 @@
   },
   "entity": {
     "sensor": {
-      "loans": { "name": "Lainat" },
-      "next_due_date": { "name": "Seuraava eräpäivä" },
-      "fines": { "name": "Maksut" },
-      "holds": { "name": "Varaukset" },
-      "holds_ready": { "name": "Noudettavat varaukset" }
+      "loans": {
+        "name": "Lainat"
+      },
+      "next_due_date": {
+        "name": "Seuraava eräpäivä"
+      },
+      "fines": {
+        "name": "Maksut"
+      },
+      "holds": {
+        "name": "Varaukset"
+      },
+      "holds_ready": {
+        "name": "Noudettavat varaukset"
+      },
+      "loans_this_year": {
+        "name": "Lainoja tänä vuonna"
+      },
+      "saved_searches": {
+        "name": "Hakuvahdit"
+      }
     },
     "button": {
-      "renew_all": { "name": "Uusi kaikki lainat" }
+      "renew_all": {
+        "name": "Uusi kaikki lainat"
+      }
     },
     "calendar": {
-      "due_dates": { "name": "Eräpäivät" }
+      "due_dates": {
+        "name": "Eräpäivät"
+      }
     }
   }
 }

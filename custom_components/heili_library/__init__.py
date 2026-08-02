@@ -40,7 +40,15 @@ class HeiliCoordinator(DataUpdateCoordinator[FinnaData]):
 
     async def _async_update_data(self) -> FinnaData:
         try:
-            return await self.client.async_get_data()
+            data = await self.client.async_get_data()
+            # Flag saved searches whose hit count grew since the last poll.
+            if self.data is not None:
+                previous = {s.query: s.results for s in self.data.saved_searches}
+                for search in data.saved_searches:
+                    prev = previous.get(search.query)
+                    if prev is not None and search.results is not None:
+                        search.new_results = max(0, search.results - prev)
+            return data
         except FinnaAuthError as err:
             raise ConfigEntryAuthFailed(err) from err
         except FinnaError as err:

@@ -47,12 +47,31 @@ class Hold:
 
 
 @dataclass
+class HistoryEntry:
+    title: str | None
+    author: str | None
+    checkout_date: date | None
+    return_date: date | None
+
+
+@dataclass
+class SavedSearch:
+    query: str
+    url: str | None
+    results: int | None
+    new_results: int = 0
+
+
+@dataclass
 class FinnaData:
     loans: list[Loan] = field(default_factory=list)
     holds: list[Hold] = field(default_factory=list)
     fines_total: float | None = None
     renew_all_ids: list[str] = field(default_factory=list)
     renew_csrf: str | None = None
+    loans_this_year: int | None = None
+    history_total: int | None = None
+    saved_searches: list[SavedSearch] = field(default_factory=list)
 
     @property
     def next_due_date(self) -> date | None:
@@ -148,6 +167,57 @@ def parse_holds(html: str) -> list[Hold]:
     return holds
 
 
+HISTORY_TOTAL_RE = re.compile(r"Lainaushistoria\s*\((\d+)\)")
+
+
+def parse_history_page(html: str) -> tuple[list[HistoryEntry], int | None]:
+    """Parse one /Checkouts/History page; returns (entries, total_count)."""
+    doc = BeautifulSoup(html, "html.parser")
+    m = HISTORY_TOTAL_RE.search(doc.get_text(" ", strip=True))
+    total = int(m.group(1)) if m else None
+    entries = []
+    for row in doc.select("tr.myresearch-row.result, tr.myresearch-row[id^=record]"):
+        title_el = row.select_one("h3.record-title")
+        if title_el is None:
+            continue
+        author_el = row.select_one(".record-core-metadata a")
+        status = row.select_one(".checkedout-status-information") or row
+        details = _text_pairs(status)
+        entries.append(
+            HistoryEntry(
+                title=title_el.get_text(" ", strip=True),
+                author=author_el.get_text(" ", strip=True) if author_el else None,
+                checkout_date=parse_finnish_date(details.get("Lainauspäivä")),
+                return_date=parse_finnish_date(details.get("Palautuspäivä")),
+            )
+        )
+    return entries, total
+
+
+def parse_saved_searches(html: str) -> list[SavedSearch]:
+    """Parse table#saved-searches on /Search/History."""
+    doc = BeautifulSoup(html, "html.parser")
+    searches = []
+    table = doc.select_one("table#saved-searches")
+    for row in table.select("tr") if table else []:
+        link = row.select_one("td.history_search a")
+        if link is None:
+            continue
+        results_el = row.select_one("td.history_results")
+        results = None
+        if results_el is not None:
+            digits = re.sub(r"[^\d]", "", results_el.get_text(strip=True))
+            results = int(digits) if digits else None
+        searches.append(
+            SavedSearch(
+                query=link.get_text(" ", strip=True),
+                url=link.get("href"),
+                results=results,
+            )
+        )
+    return searches
+
+
 def parse_fines_total(html: str) -> float | None:
     doc = BeautifulSoup(html, "html.parser")
     total_el = doc.select_one(".js-payment-total-due[data-raw]")
@@ -201,13 +271,44 @@ class FinnaClient:
                 raise FinnaAuthError("still logged out after re-login")
         return body
 
+    async def async_count_loans_in_year(self, year: int) -> tuple[int | None, int | None]:
+        """Count history entries checked out in `year`; returns (count, total).
+
+        History is newest-first, so stop as soon as a page only has older
+        entries. Capped at 50 pages as a runaway guard.
+        """
+        count = 0
+        total = None
+        for page in range(1, 51):
+            entries, total = parse_history_page(
+                await self._get_page(f"/Checkouts/History?page={page}")
+            )
+            if not entries:
+                break
+            count += sum(
+                1 for e in entries if e.checkout_date and e.checkout_date.year == year
+            )
+            if any(e.checkout_date and e.checkout_date.year < year for e in entries):
+                break
+        return (count if total is not None else None), total
+
+    async def async_get_saved_searches(self) -> list[SavedSearch]:
+        return parse_saved_searches(await self._get_page("/Search/History"))
+
     async def async_get_data(self) -> FinnaData:
         loans, renew_ids, csrf = parse_checked_out(
             await self._get_page("/MyResearch/CheckedOut")
         )
         holds = parse_holds(await self._get_page("/Holds/List"))
         fines_total = parse_fines_total(await self._get_page("/MyResearch/Fines"))
+        loans_this_year, history_total = await self.async_count_loans_in_year(
+            date.today().year
+        )
+        saved_searches = await self.async_get_saved_searches()
         return FinnaData(
+            loans_this_year=loans_this_year,
+            history_total=history_total,
+            saved_searches=saved_searches,
             loans=loans,
             holds=holds,
             fines_total=fines_total,

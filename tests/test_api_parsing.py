@@ -103,3 +103,46 @@ def test_next_due_date():
     data = FinnaData(loans=loans)
     assert data.next_due_date == date(2026, 7, 15)
     assert FinnaData().next_due_date is None
+
+
+def test_parse_history_page():
+    from custom_components.heili_library.api import parse_history_page
+
+    entries, total = parse_history_page(fixture("history.html"))
+    assert total == 5
+    assert len(entries) == 2
+    assert entries[0].title == "Uusi kirja"
+    assert entries[0].author == "Meikäläinen, Matti"
+    assert entries[0].checkout_date == date(2026, 7, 15)
+    assert entries[0].return_date == date(2026, 7, 30)
+    assert entries[1].title == "Vanha kirja ilman tietuetta"
+    assert entries[1].checkout_date == date(2025, 11, 20)
+
+
+def test_parse_history_page_empty():
+    from custom_components.heili_library.api import parse_history_page
+
+    # Live Heili shows "Lainaushistoria (0)" with no table when empty.
+    entries, total = parse_history_page(
+        "<html><body><h2>Lainaushistoria (0)</h2>"
+        "Ei tietoja lainaushistoriassa.</body></html>"
+    )
+    assert entries == []
+    assert total == 0
+
+
+def test_parse_saved_searches():
+    from custom_components.heili_library.api import parse_saved_searches
+
+    searches = parse_saved_searches(fixture("searchhistory.html"))
+    assert len(searches) == 2  # recent-searches table is ignored
+    assert searches[0].query == "sienet"
+    assert searches[0].url == "/Search/Results?lookfor=sienet&type=AllFields"
+    assert searches[0].results == 1234  # thousands separator stripped
+    assert searches[1].results == 7
+
+
+def test_parse_saved_searches_none():
+    from custom_components.heili_library.api import parse_saved_searches
+
+    assert parse_saved_searches("<html><body></body></html>") == []
