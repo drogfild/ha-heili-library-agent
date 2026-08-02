@@ -46,6 +46,16 @@ kirjastokortiltasi.
 Multiple library cards are supported — add each card as its own config entry,
 even across different Finna libraries.
 
+## Screenshots
+
+Adding a library card:
+
+<img src="assets/screenshot-config-flow.png" alt="Config flow: Finna address, library card number and PIN" width="600"/>
+
+Device page with all sensors:
+
+<img src="assets/screenshot-device.png" alt="Device page: loans, holds, fines, due dates and renew button" width="800"/>
+
 ## Installation
 
 ### HACS (recommended)
