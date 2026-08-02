@@ -19,7 +19,13 @@ you to re-authenticate.
 
 > Developed and tested against **heili.finna.fi** (Heili libraries, South
 > Karelia). Other Finna views run the same software and markup, so they are
-> expected to work with the Finnish UI language — reports welcome via issues.
+> expected to work — reports welcome via issues.
+
+> **Known limitation:** parsing relies on the Finnish UI labels ("Eräpäivä",
+> "Noutopaikka", …), which Finna serves by default. If your Finna session
+> defaults to English or Swedish, sensors will come up empty. Language-
+> independent parsing is tracked in
+> [#2](https://github.com/talonpoika/ha-finna-library/issues/2).
 
 ## Entities (one device per library card)
 
