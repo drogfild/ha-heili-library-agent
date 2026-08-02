@@ -6,9 +6,11 @@ import logging
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import HeiliConfigEntry, HeiliCoordinator
+from .api import FinnaError
 from .entity import HeiliEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,6 +32,9 @@ class RenewAllButton(HeiliEntity, ButtonEntity):
         super().__init__(coordinator, "renew_all")
 
     async def async_press(self) -> None:
-        ok, fail = await self.coordinator.client.async_renew_all()
+        try:
+            ok, fail = await self.coordinator.client.async_renew_all()
+        except FinnaError as err:
+            raise HomeAssistantError(f"Renewing loans failed: {err}") from err
         _LOGGER.info("Renew all for %s: %d ok, %d failed", self.coordinator.username, ok, fail)
         await self.coordinator.async_request_refresh()

@@ -27,6 +27,10 @@ class FinnaAuthError(FinnaError):
     """Login rejected."""
 
 
+class FinnaConnectionError(FinnaError):
+    """Network or HTTP-level failure."""
+
+
 @dataclass
 class Loan:
     title: str | None
@@ -222,7 +226,10 @@ def parse_fines_total(html: str) -> float | None:
     doc = BeautifulSoup(html, "html.parser")
     total_el = doc.select_one(".js-payment-total-due[data-raw]")
     if total_el is not None:
-        return int(total_el["data-raw"]) / 100
+        try:
+            return int(total_el["data-raw"]) / 100
+        except (ValueError, TypeError):
+            return None
     # No online-payment block on the page: no fines (or not payable online).
     return 0.0 if not doc.select("table.fines-table tbody tr") else None
 
@@ -235,18 +242,29 @@ class FinnaClient:
         self._username = username
         self._pin = pin
         self._headers = {"User-Agent": USER_AGENT}
+        self._timeout = aiohttp.ClientTimeout(total=30)
+
+    async def _request(self, method: str, path: str, data=None) -> str:
+        try:
+            async with self._session.request(
+                method,
+                BASE_URL + path,
+                data=data,
+                headers=self._headers,
+                timeout=self._timeout,
+            ) as resp:
+                resp.raise_for_status()
+                return await resp.text()
+        except FinnaError:
+            raise
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise FinnaConnectionError(f"{method} {path}: {err}") from err
 
     async def _get(self, path: str) -> str:
-        async with self._session.get(BASE_URL + path, headers=self._headers) as resp:
-            resp.raise_for_status()
-            return await resp.text()
+        return await self._request("GET", path)
 
     async def _post(self, path: str, data) -> str:
-        async with self._session.post(
-            BASE_URL + path, data=data, headers=self._headers
-        ) as resp:
-            resp.raise_for_status()
-            return await resp.text()
+        return await self._request("POST", path, data)
 
     async def async_login(self) -> None:
         fields = parse_login_form(await self._get("/MyResearch/UserLogin"))

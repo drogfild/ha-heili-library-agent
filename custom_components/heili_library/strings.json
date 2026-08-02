@@ -7,6 +7,13 @@
           "username": "Library card number (HEILI...)",
           "pin": "PIN code"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter PIN",
+        "description": "Enter a new PIN for card {username}",
+        "data": {
+          "pin": "PIN code"
+        }
       }
     },
     "error": {
@@ -14,7 +21,8 @@
       "cannot_connect": "Could not connect to heili.finna.fi"
     },
     "abort": {
-      "already_configured": "This library card is already configured"
+      "already_configured": "This library card is already configured",
+      "reauth_successful": "Re-authentication successful"
     }
   },
   "entity": {

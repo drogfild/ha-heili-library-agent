@@ -7,6 +7,13 @@
           "username": "Kirjastokortin tunnus (HEILI...)",
           "pin": "PIN-koodi"
         }
+      },
+      "reauth_confirm": {
+        "title": "Syötä PIN uudelleen",
+        "description": "Anna uusi PIN-koodi kortille {username}",
+        "data": {
+          "pin": "PIN-koodi"
+        }
       }
     },
     "error": {
@@ -14,7 +21,8 @@
       "cannot_connect": "Yhteys heili.finna.fi-palveluun epäonnistui"
     },
     "abort": {
-      "already_configured": "Tämä kirjastokortti on jo lisätty"
+      "already_configured": "Tämä kirjastokortti on jo lisätty",
+      "reauth_successful": "Kirjautumistiedot päivitetty"
     }
   },
   "entity": {
