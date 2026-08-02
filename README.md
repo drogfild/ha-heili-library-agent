@@ -7,8 +7,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/talonpoika/ha-finna-library)](https://github.com/talonpoika/ha-finna-library/releases)
 
 Home Assistant custom integration for Finnish libraries on the
-[Finna](https://finna.fi) platform (heili.finna.fi, vaski.finna.fi,
-lastu.finna.fi, …). Logs into the library's Finna view with your library card
+[Finna](https://finna.fi) platform (helmet.finna.fi — Helsinki metropolitan
+area libraries, heili.finna.fi, vaski.finna.fi, lastu.finna.fi, …). Logs into the library's Finna view with your library card
 and brings your loans, holds and fines into Home Assistant over plain HTTP —
 no browser automation needed.
 
@@ -16,6 +16,10 @@ Finna has no public API for user data, so the integration logs in the same way
 a browser does (form POST with a CSRF token) and parses the account pages.
 Data refreshes every 6 hours. If the PIN stops working, Home Assistant asks
 you to re-authenticate.
+
+*Suomeksi:* Home Assistant -integraatio Finna-kirjastoille (Helmet, Heili,
+Vaski, Lastu, …) — lainat, eräpäivät, varaukset, maksut ja uusinta suoraan
+kirjastokortiltasi.
 
 > Developed and tested against **heili.finna.fi** (Heili libraries, South
 > Karelia). Other Finna views run the same software and markup, so they are
