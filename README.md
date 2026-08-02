@@ -9,8 +9,8 @@
 Home Assistant custom integration for Finnish libraries on the
 [Finna](https://finna.fi) platform (heili.finna.fi, vaski.finna.fi,
 lastu.finna.fi, …). Logs into the library's Finna view with your library card
-and brings your loans, holds and fines into Home Assistant — no Selenium,
-no browser, just HTTP.
+and brings your loans, holds and fines into Home Assistant over plain HTTP —
+no browser automation needed.
 
 Finna has no public API for user data, so the integration logs in the same way
 a browser does (form POST with a CSRF token) and parses the account pages.
@@ -102,14 +102,6 @@ parsing flow against the live site; credentials are passed via the
 Credentials are stored in Home Assistant's config entry storage and are never
 logged. This project interacts with a third-party service; you are responsible
 for ensuring your use complies with its terms of use.
-
-## History
-
-This project started as *ha-heili-library-agent*, an AppDaemon app scraping
-the old Arena site (heilikirjastot.fi) with Selenium. Heili libraries moved
-to the Finna platform, the project was rewritten as a native custom
-integration (v1.x, domain `heili_library`) and then generalized to support
-any Finna view (v2.0, domain `finna_library`).
 
 ## License
 
