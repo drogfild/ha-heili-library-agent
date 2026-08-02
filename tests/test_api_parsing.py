@@ -49,7 +49,7 @@ def test_parse_checked_out():
 
 
 def test_parse_checked_out_no_renewals_form():
-    # Live Heili omits the whole renewals form when nothing is renewable.
+    # Live Finna views omit the whole renewals form when nothing is renewable.
     html = fixture("checkedout.html").replace('name="renewals"', 'name="other"')
     loans, renew_ids, csrf = parse_checked_out(html)
     assert len(loans) == 2
@@ -87,7 +87,7 @@ def test_parse_fines_empty():
 def test_parse_login_form():
     html = """
     <form method="post" action="/MyResearch/Home" name="loginForm" id="loginForm">
-      <input type="hidden" name="target" value="heili">
+      <input type="hidden" name="target" value="demo">
       <input id="u" type="text" name="username" value="">
       <input id="p" type="password" name="password">
       <input type="hidden" name="auth_method" value="MultiILS">
@@ -95,7 +95,7 @@ def test_parse_login_form():
     </form>
     """
     fields = parse_login_form(html)
-    assert fields == {"target": "heili", "auth_method": "MultiILS", "csrf": "abc-def"}
+    assert fields == {"target": "demo", "auth_method": "MultiILS", "csrf": "abc-def"}
 
 
 def test_next_due_date():
@@ -122,7 +122,7 @@ def test_parse_history_page():
 def test_parse_history_page_empty():
     from custom_components.finna_library.api import parse_history_page
 
-    # Live Heili shows "Lainaushistoria (0)" with no table when empty.
+    # A live Finna view shows "Lainaushistoria (0)" with no table when empty.
     entries, total = parse_history_page(
         "<html><body><h2>Lainaushistoria (0)</h2>"
         "Ei tietoja lainaushistoriassa.</body></html>"

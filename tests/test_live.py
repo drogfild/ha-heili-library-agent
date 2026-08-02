@@ -32,6 +32,7 @@ async def test_setup_against_live_finna(hass):
         domain=DOMAIN,
         title="live",
         data={
+            "host": os.environ.get("FINNA_HOST", "heili.finna.fi"),
             CONF_USERNAME: os.environ["FINNA_USERNAME"],
             CONF_PIN: os.environ["FINNA_PIN"],
         },

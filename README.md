@@ -73,7 +73,7 @@ automation:
   - alias: "Library book due soon"
     triggers:
       - trigger: calendar
-        entity_id: calendar.heili_mycard_due_dates
+        entity_id: calendar.mycard_due_dates
         event: start
         offset: "-48:00:00"   # two days before the due date
     actions:

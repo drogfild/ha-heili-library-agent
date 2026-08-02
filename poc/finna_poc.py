@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Standalone proof-of-concept: read loans, holds and fines from heili.finna.fi.
+"""Standalone proof-of-concept: read loans, holds and fines from a Finna view.
 
 Usage:
-    FINNA_USERNAME=HEILIxxxxxx FINNA_PIN=1234 python finna_poc.py [--renew-all]
+    FINNA_USERNAME=xxxxxx FINNA_PIN=1234 python finna_poc.py [--renew-all]
 
 Credentials are read from the environment only; never hardcode or log them.
 """
@@ -18,8 +18,8 @@ import sys
 import aiohttp
 from bs4 import BeautifulSoup
 
-BASE = "https://heili.finna.fi"
-UA = "Mozilla/5.0 (X11; Linux x86_64) HomeAssistant-heili-poc"
+BASE = f"https://{os.environ.get('FINNA_HOST', 'heili.finna.fi')}"
+UA = "Mozilla/5.0 (X11; Linux x86_64) HomeAssistant-finna-poc"
 
 DUE_DATE_RE = re.compile(r"(\d{1,2})\.(\d{1,2})\.(\d{4})")
 
