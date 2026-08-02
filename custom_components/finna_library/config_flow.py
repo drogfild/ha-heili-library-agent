@@ -33,7 +33,7 @@ REAUTH_SCHEMA = vol.Schema({vol.Required(CONF_PIN): str})
 class FinnaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Add a library card via the UI."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def _async_validate(
         self, username: str, pin: str, host: str

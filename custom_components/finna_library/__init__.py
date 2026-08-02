@@ -6,8 +6,9 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -59,6 +60,34 @@ class FinnaCoordinator(DataUpdateCoordinator[FinnaData]):
             raise UpdateFailed(err) from err
         except Exception as err:  # noqa: BLE001 - network errors from aiohttp
             raise UpdateFailed(err) from err
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate v1 entries: unique IDs and device identifiers gain the host."""
+    if entry.version > 2:
+        return False  # downgrade from a future version
+    if entry.version == 1:
+        host = entry.data.get(CONF_HOST, DEFAULT_HOST)
+        username = entry.data[CONF_USERNAME]
+        account = f"{host}:{username.lower()}"
+        old_prefix = f"{username}_"
+
+        @callback
+        def migrate_unique_id(entity_entry: er.RegistryEntry) -> dict | None:
+            if entity_entry.unique_id.startswith(old_prefix):
+                key = entity_entry.unique_id.removeprefix(old_prefix)
+                return {"new_unique_id": f"{account}_{key}"}
+            return None
+
+        await er.async_migrate_entries(hass, entry.entry_id, migrate_unique_id)
+        device_registry = dr.async_get(hass)
+        device = device_registry.async_get_device(identifiers={(DOMAIN, username)})
+        if device is not None:
+            device_registry.async_update_device(
+                device.id, new_identifiers={(DOMAIN, account)}
+            )
+        hass.config_entries.async_update_entry(entry, version=2)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: FinnaConfigEntry) -> bool:
