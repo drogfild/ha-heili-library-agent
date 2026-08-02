@@ -9,7 +9,7 @@ import os
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.heili_library.const import CONF_PIN, CONF_USERNAME, DOMAIN
+from custom_components.finna_library.const import CONF_PIN, CONF_USERNAME, DOMAIN
 
 pytestmark = pytest.mark.skipif(
     not (os.environ.get("FINNA_USERNAME") and os.environ.get("FINNA_PIN")),

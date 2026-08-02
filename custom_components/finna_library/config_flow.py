@@ -1,4 +1,4 @@
-"""Config flow for Heili Library."""
+"""Config flow for Finna Library."""
 
 from __future__ import annotations
 
@@ -10,27 +10,37 @@ from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import FinnaAuthError, FinnaClient
-from .const import CONF_PIN, CONF_USERNAME, DOMAIN
+from .const import CONF_HOST, CONF_PIN, CONF_USERNAME, DEFAULT_HOST, DOMAIN
 
 DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_HOST, default=DEFAULT_HOST): str,
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PIN): str,
     }
 )
 
+
+def normalize_host(raw: str) -> str:
+    """Accept 'vaski.finna.fi', a full URL, or one with a trailing slash."""
+    host = raw.strip().lower()
+    host = host.removeprefix("https://").removeprefix("http://")
+    return host.split("/")[0]
+
 REAUTH_SCHEMA = vol.Schema({vol.Required(CONF_PIN): str})
 
 
-class HeiliConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class FinnaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Add a library card via the UI."""
 
     VERSION = 1
 
-    async def _async_validate(self, username: str, pin: str) -> str | None:
+    async def _async_validate(
+        self, username: str, pin: str, host: str
+    ) -> str | None:
         """Try to log in; return an error key or None."""
         client = FinnaClient(
-            async_create_clientsession(self.hass), username, pin
+            async_create_clientsession(self.hass), username, pin, host
         )
         try:
             await client.async_login()
@@ -46,15 +56,20 @@ class HeiliConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             username = user_input[CONF_USERNAME].strip()
-            await self.async_set_unique_id(username.lower())
+            host = normalize_host(user_input[CONF_HOST])
+            await self.async_set_unique_id(f"{host}:{username.lower()}")
             self._abort_if_unique_id_configured()
-            error = await self._async_validate(username, user_input[CONF_PIN])
+            error = await self._async_validate(username, user_input[CONF_PIN], host)
             if error:
                 errors["base"] = error
             else:
                 return self.async_create_entry(
-                    title=username,
-                    data={CONF_USERNAME: username, CONF_PIN: user_input[CONF_PIN]},
+                    title=f"{username} ({host})",
+                    data={
+                        CONF_HOST: host,
+                        CONF_USERNAME: username,
+                        CONF_PIN: user_input[CONF_PIN],
+                    },
                 )
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
@@ -73,7 +88,9 @@ class HeiliConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         entry = self._get_reauth_entry()
         if user_input is not None:
             error = await self._async_validate(
-                entry.data[CONF_USERNAME], user_input[CONF_PIN]
+                entry.data[CONF_USERNAME],
+                user_input[CONF_PIN],
+                entry.data.get(CONF_HOST, DEFAULT_HOST),
             )
             if error:
                 errors["base"] = error

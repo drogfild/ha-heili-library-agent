@@ -2,9 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "Heili-kirjastokortti",
+        "title": "Finna-kirjastokortti",
         "data": {
-          "username": "Kirjastokortin tunnus (HEILI...)",
+          "host": "Finna-osoite (esim. vaski.finna.fi)",
+          "username": "Kirjastokortin tunnus",
           "pin": "PIN-koodi"
         }
       },

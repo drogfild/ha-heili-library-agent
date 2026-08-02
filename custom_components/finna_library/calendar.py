@@ -8,22 +8,22 @@ from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import HeiliConfigEntry, HeiliCoordinator
-from .entity import HeiliEntity
+from . import FinnaConfigEntry, FinnaCoordinator
+from .entity import FinnaEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: HeiliConfigEntry,
+    entry: FinnaConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     async_add_entities([DueDateCalendar(entry.runtime_data)])
 
 
-class DueDateCalendar(HeiliEntity, CalendarEntity):
+class DueDateCalendar(FinnaEntity, CalendarEntity):
     _attr_translation_key = "due_dates"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "due_dates")
 
     def _events(self) -> list[CalendarEvent]:

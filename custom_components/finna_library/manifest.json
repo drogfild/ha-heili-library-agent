@@ -1,0 +1,16 @@
+{
+  "codeowners": [
+    "@drogfild"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/talonpoika/ha-finna-library",
+  "domain": "finna_library",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/talonpoika/ha-finna-library/issues",
+  "name": "Finna Library",
+  "requirements": [
+    "beautifulsoup4>=4.12.0"
+  ],
+  "version": "2.0.0"
+}

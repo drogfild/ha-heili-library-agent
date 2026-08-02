@@ -1,4 +1,4 @@
-"""HTTP client and HTML parsing for heili.finna.fi (VuFind/Finna).
+"""HTTP client and HTML parsing for Finna library views (VuFind-based).
 
 Finna has no user-data API, so this logs in like a browser (form POST with a
 one-time CSRF token) and parses the account pages. All parsing functions are
@@ -14,7 +14,7 @@ from datetime import date
 import aiohttp
 from bs4 import BeautifulSoup
 
-from .const import BASE_URL, USER_AGENT
+from .const import DEFAULT_HOST, USER_AGENT
 
 FINNISH_DATE_RE = re.compile(r"(\d{1,2})\.(\d{1,2})\.(\d{4})")
 
@@ -237,7 +237,14 @@ def parse_fines_total(html: str) -> float | None:
 class FinnaClient:
     """Session-holding client for one library card."""
 
-    def __init__(self, session: aiohttp.ClientSession, username: str, pin: str) -> None:
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        username: str,
+        pin: str,
+        host: str = DEFAULT_HOST,
+    ) -> None:
+        self.base_url = f"https://{host}"
         self._session = session
         self._username = username
         self._pin = pin
@@ -248,7 +255,7 @@ class FinnaClient:
         try:
             async with self._session.request(
                 method,
-                BASE_URL + path,
+                self.base_url + path,
                 data=data,
                 headers=self._headers,
                 timeout=self._timeout,

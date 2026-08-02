@@ -6,13 +6,13 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import HeiliConfigEntry, HeiliCoordinator
-from .entity import HeiliEntity
+from . import FinnaConfigEntry, FinnaCoordinator
+from .entity import FinnaEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: HeiliConfigEntry,
+    entry: FinnaConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator = entry.runtime_data
@@ -49,11 +49,11 @@ def _hold_attr(hold) -> dict:
     }
 
 
-class LoansSensor(HeiliEntity, SensorEntity):
+class LoansSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "loans"
     _attr_icon = "mdi:book-open-variant"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "loans")
 
     @property
@@ -65,11 +65,11 @@ class LoansSensor(HeiliEntity, SensorEntity):
         return {"loans": [_loan_attr(l) for l in self.coordinator.data.loans]}
 
 
-class NextDueDateSensor(HeiliEntity, SensorEntity):
+class NextDueDateSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "next_due_date"
     _attr_device_class = SensorDeviceClass.DATE
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "next_due_date")
 
     @property
@@ -77,12 +77,12 @@ class NextDueDateSensor(HeiliEntity, SensorEntity):
         return self.coordinator.data.next_due_date
 
 
-class FinesSensor(HeiliEntity, SensorEntity):
+class FinesSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "fines"
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_native_unit_of_measurement = "EUR"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "fines")
 
     @property
@@ -90,11 +90,11 @@ class FinesSensor(HeiliEntity, SensorEntity):
         return self.coordinator.data.fines_total
 
 
-class HoldsSensor(HeiliEntity, SensorEntity):
+class HoldsSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "holds"
     _attr_icon = "mdi:book-clock"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "holds")
 
     @property
@@ -106,11 +106,11 @@ class HoldsSensor(HeiliEntity, SensorEntity):
         return {"holds": [_hold_attr(h) for h in self.coordinator.data.holds]}
 
 
-class LoansThisYearSensor(HeiliEntity, SensorEntity):
+class LoansThisYearSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "loans_this_year"
     _attr_icon = "mdi:counter"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "loans_this_year")
 
     @property
@@ -122,11 +122,11 @@ class LoansThisYearSensor(HeiliEntity, SensorEntity):
         return {"history_total": self.coordinator.data.history_total}
 
 
-class SavedSearchesSensor(HeiliEntity, SensorEntity):
+class SavedSearchesSensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "saved_searches"
     _attr_icon = "mdi:magnify-plus"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "saved_searches")
 
     @property
@@ -151,11 +151,11 @@ class SavedSearchesSensor(HeiliEntity, SensorEntity):
         }
 
 
-class HoldsReadySensor(HeiliEntity, SensorEntity):
+class HoldsReadySensor(FinnaEntity, SensorEntity):
     _attr_translation_key = "holds_ready"
     _attr_icon = "mdi:book-check"
 
-    def __init__(self, coordinator: HeiliCoordinator) -> None:
+    def __init__(self, coordinator: FinnaCoordinator) -> None:
         super().__init__(coordinator, "holds_ready")
 
     @property

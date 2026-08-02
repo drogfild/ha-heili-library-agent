@@ -2,9 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "Heili library card",
+        "title": "Finna library card",
         "data": {
-          "username": "Library card number (HEILI...)",
+          "host": "Finna address (e.g. vaski.finna.fi)",
+          "username": "Library card number",
           "pin": "PIN code"
         }
       },

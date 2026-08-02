@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from custom_components.heili_library.api import (
+from custom_components.finna_library.api import (
     FinnaData,
     parse_checked_out,
     parse_fines_total,
@@ -106,7 +106,7 @@ def test_next_due_date():
 
 
 def test_parse_history_page():
-    from custom_components.heili_library.api import parse_history_page
+    from custom_components.finna_library.api import parse_history_page
 
     entries, total = parse_history_page(fixture("history.html"))
     assert total == 5
@@ -120,7 +120,7 @@ def test_parse_history_page():
 
 
 def test_parse_history_page_empty():
-    from custom_components.heili_library.api import parse_history_page
+    from custom_components.finna_library.api import parse_history_page
 
     # Live Heili shows "Lainaushistoria (0)" with no table when empty.
     entries, total = parse_history_page(
@@ -132,7 +132,7 @@ def test_parse_history_page_empty():
 
 
 def test_parse_saved_searches():
-    from custom_components.heili_library.api import parse_saved_searches
+    from custom_components.finna_library.api import parse_saved_searches
 
     searches = parse_saved_searches(fixture("searchhistory.html"))
     assert len(searches) == 2  # recent-searches table is ignored
@@ -143,6 +143,6 @@ def test_parse_saved_searches():
 
 
 def test_parse_saved_searches_none():
-    from custom_components.heili_library.api import parse_saved_searches
+    from custom_components.finna_library.api import parse_saved_searches
 
     assert parse_saved_searches("<html><body></body></html>") == []
