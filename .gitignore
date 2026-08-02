@@ -1,29 +1,31 @@
+# Local agent/project notes
+CLAUDE.md
+handoffs/
+
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 *.egg-info/
 .venv/
 venv/
 .env
 
-# AppDaemon
-appdaemon.log
-appdaemon.pid
+# Test & tool caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# Selenium / Chrome
-.chromedriver/
-chromedriver.log
-chrome_debug.log
-selenium.log
-
-# Headless display
-.Xauthority
+# Secrets — never commit tokens or credentials
+*.token
+*token*
+*secret*
+# (integration code is safe; the guard above is for stray credential dumps)
+!custom_components/**
 
 # OS/editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-.venv/
