@@ -29,14 +29,20 @@ class LoansTodoList(FinnaEntity, TodoListEntity):
     @property
     def todo_items(self) -> list[TodoItem]:
         items = []
+        seen_uids: set[str] = set()
         for index, loan in enumerate(self.coordinator.data.loans):
             summary = loan.title or "?"
             if loan.author:
                 summary += f" ({loan.author})"
+            # Two copies of the same record share a record id; keep uids unique.
+            uid = loan.record_id or f"loan-{index}"
+            if uid in seen_uids:
+                uid = f"{uid}-{index}"
+            seen_uids.add(uid)
             items.append(
                 TodoItem(
                     summary=summary,
-                    uid=loan.record_id or f"loan-{index}",
+                    uid=uid,
                     status=TodoItemStatus.NEEDS_ACTION,
                     due=loan.due_date,
                 )

@@ -56,6 +56,18 @@ def test_uid_falls_back_to_index_and_title_to_question_mark():
     assert item.summary == "?"
 
 
+def test_duplicate_record_ids_get_unique_uids():
+    entity = make_entity(
+        [
+            loan("Sama kirja", due=date(2026, 8, 1), record_id="demo.x-1"),
+            loan("Sama kirja", due=date(2026, 8, 2), record_id="demo.x-1"),
+        ]
+    )
+    uids = [i.uid for i in entity.todo_items]
+    assert len(set(uids)) == 2
+    assert uids[0] == "demo.x-1"
+
+
 def test_empty_loans_gives_empty_list():
     assert make_entity([]).todo_items == []
 
