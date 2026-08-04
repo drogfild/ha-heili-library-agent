@@ -60,6 +60,11 @@
       "due_dates": {
         "name": "Eräpäivät"
       }
+    },
+    "todo": {
+      "loaned_books": {
+        "name": "Lainatut kirjat"
+      }
     }
   }
 }

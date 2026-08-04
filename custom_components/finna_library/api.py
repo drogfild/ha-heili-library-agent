@@ -38,6 +38,7 @@ class Loan:
     due_date: date | None
     renewable: bool
     details: dict
+    record_id: str | None = None
 
 
 @dataclass
@@ -153,6 +154,7 @@ def parse_checked_out(html: str) -> tuple[list[Loan], list[str], str | None]:
                 due_date=parse_finnish_date(details.get("Eräpäivä")),
                 renewable=bool(row.select_one("input.checkbox-select-item")),
                 details=details,
+                record_id=(row.get("id") or "").removeprefix("record") or None,
             )
         )
     form = doc.find("form", attrs={"name": "renewals"})

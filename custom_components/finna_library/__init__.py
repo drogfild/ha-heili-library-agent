@@ -17,7 +17,7 @@ from .const import CONF_HOST, CONF_PIN, CONF_USERNAME, DEFAULT_HOST, DOMAIN, UPD
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "button", "calendar"]
+PLATFORMS = ["sensor", "button", "calendar", "todo"]
 
 type FinnaConfigEntry = ConfigEntry[FinnaCoordinator]
 

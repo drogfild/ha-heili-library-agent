@@ -37,6 +37,8 @@ def test_parse_checked_out():
     assert loan.author == "Amores, Eva"
     assert loan.due_date == date(2026, 8, 31)
     assert loan.renewable is True
+    assert loan.record_id == "demo.aaaa-1111"
+    assert loans[1].record_id == "demo.bbbb-2222"
     assert loan.details["Lainauspaikka"] == "Pontuksen kirjasto"
     assert loan.details["Uusintakertoja jäljellä"] == "5"
 

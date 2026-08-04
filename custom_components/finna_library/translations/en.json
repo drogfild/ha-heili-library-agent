@@ -60,6 +60,11 @@
       "due_dates": {
         "name": "Due dates"
       }
+    },
+    "todo": {
+      "loaned_books": {
+        "name": "Loaned books"
+      }
     }
   }
 }
