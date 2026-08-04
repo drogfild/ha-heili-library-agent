@@ -42,6 +42,10 @@ kirjastokortiltasi.
 | `sensor.*_saved_searches` | Saved searches with hit counts; `new_results` attributes flag searches whose hits grew since the last poll |
 | `button.*_renew_all` | Renew all renewable loans |
 | `calendar.*_due_dates` | All-day events for every due date |
+| `todo.*_loaned_books` | Read-only to-do list of loaned books with due dates — shows the actual titles in the UI |
+
+If you don't want the to-do list, disable the entity from its settings
+(device page → entity → cog → *Enabled*).
 
 Multiple library cards are supported — add each card as its own config entry,
 even across different Finna libraries.
